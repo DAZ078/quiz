@@ -585,6 +585,24 @@
     font-size: 15px;
   }
 
+  .reset-link {
+    background: none;
+    border: none;
+    color: var(--gray);
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    padding: 6px 12px;
+    text-decoration: underline;
+    text-decoration-color: var(--lgray);
+    text-underline-offset: 3px;
+    transition: color 0.2s;
+  }
+
+  .reset-link:hover {
+    color: var(--error);
+  }
+
   /* Loading */
   .loading {
     text-align: center;
@@ -683,6 +701,7 @@
 
       <div class="leaderboard-footer">
         <div class="refresh-info"><span class="dot"></span>Live ranglijst · ververst automatisch</div>
+        <button class="reset-link" id="reset-btn">Reset ranglijst</button>
       </div>
     </div>
   </div>
@@ -1067,6 +1086,34 @@ function startLeaderboardRefresh() {
   if (refreshInterval) clearInterval(refreshInterval);
   refreshInterval = setInterval(loadLeaderboard, 5000);
 }
+
+// ============================================
+// RESET (PIN protected)
+// ============================================
+document.getElementById('reset-btn').addEventListener('click', async () => {
+  const pin = prompt('Voer pincode in om de ranglijst te resetten:');
+  if (pin === null) return;
+  if (pin !== '2026') {
+    alert('Onjuiste pincode.');
+    return;
+  }
+  if (!confirm('Weet je zeker dat je alle scores wilt wissen? Dit kan niet ongedaan worden gemaakt.')) return;
+
+  try {
+    await fetch(JSONBIN_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': MASTER_KEY
+      },
+      body: JSON.stringify({ scores: [] })
+    });
+    loadLeaderboard();
+  } catch (e) {
+    alert('Reset mislukt. Probeer opnieuw.');
+    console.error(e);
+  }
+});
 
 </script>
 
